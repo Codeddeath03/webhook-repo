@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Webhook Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 2rem;
+            background: #f7f7f7;
+        }
+        h1 {
+            color: #333;
+        }
+        .webhook-entry {
+            background: white;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-left: 4px solid #4caf50;
+            box-shadow: 0 0 5px rgba(0,0,0,0.1);
+        }
+        .webhook-entry small {
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+    <h1>Recent Actions</h1>
+    <div id="webhook-container">
+        <p>Loading...</p>
+    </div>
+
+    <script>
+        async function fetchWebhooks() {
+            try {
+                const res = await fetch("/webhook/latest_db");
+                const data = await res.json();
+
+                const container = document.getElementById("webhook-container");
+                container.innerHTML = "";
+
+                data.forEach(entry => {
+                        const div = document.createElement("div");
+                        div.className = "webhook-entry";
+
+                        const date = new Date(entry.timestamp);
+                        const formattedDate = date.toLocaleString("en-GB", {
+                            day: "numeric",
+                            month: "long",
+                            year: "numeric",
+                            hour: "numeric",
+                            minute: "2-digit",
+                            hour12: true,
+                            timeZone: "UTC"
+                        });
+
+                        let message = "";
+
+                        switch (entry.action) {
+                        case "PUSH":
+                            header = `<strong>${entry.author}</strong> pushed to <strong>${entry.to_branch}</strong>`;
+                            details = `<small>${formattedDate} UTC</small>`;
+                            break;
+                        case "PULL_REQUEST":
+                            header = `<strong>${entry.author}</strong> submitted a pull request`;
+                            details = `<small>From: <em>${entry.from_branch}</em> → <em>${entry.to_branch}</em><br>${formattedDate} UTC</small>`;
+                            break;
+                        case "MERGE":
+                            header = `<strong>${entry.author}</strong> merged branch <em>${entry.from_branch}</em> to <em>${entry.to_branch}</em>`;
+                            details = `<small>${formattedDate} UTC</small>`;
+                            break;
+                        default:
+                            header = `<strong>${entry.author}</strong> performed an unknown action`;
+                            details = `<small>${formattedDate} UTC</small>`;
+                    }
+
+                    div.innerHTML = `
+                        <div style="padding: 10px; border: 1px solid #ccc; border-radius: 8px; margin-bottom: 10px; background-color: #f9f9f9;">
+                            ${header}<br>
+                            ${details}
+                        </div>
+                    `;
+                        //div.innerText = message;
+                        container.appendChild(div);
+                    });
+
+            } catch (err) {
+                console.error("Failed to fetch:", err);
+            }
+        }
+
+       
+        fetchWebhooks();
+        setInterval(fetchWebhooks, 15000);
+    </script>
+</body>
+</html>
