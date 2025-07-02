@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Webhook Dashboard</title>
+    <title>Actions Dashboard</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -12,36 +12,36 @@
         h1 {
             color: #333;
         }
-        .webhook-entry {
+        .action-entry {
             background: white;
             padding: 1rem;
             margin-bottom: 1rem;
             border-left: 4px solid #4caf50;
             box-shadow: 0 0 5px rgba(0,0,0,0.1);
         }
-        .webhook-entry small {
+        .action-entry small {
             color: #888;
         }
     </style>
 </head>
 <body>
     <h1>Recent Actions</h1>
-    <div id="webhook-container">
+    <div id="action-container">
         <p>Loading...</p>
     </div>
 
     <script>
-        async function fetchWebhooks() {
+        async function fetchActions() {
             try {
                 const res = await fetch("/webhook/latest_db");
                 const data = await res.json();
 
-                const container = document.getElementById("webhook-container");
+                const container = document.getElementById("action-container");
                 container.innerHTML = "";
 
                 data.forEach(entry => {
                         const div = document.createElement("div");
-                        div.className = "webhook-entry";
+                        div.className = "action-entry";
 
                         const date = new Date(entry.timestamp);
                         const formattedDate = date.toLocaleString("en-GB", {
@@ -54,7 +54,6 @@
                             timeZone: "UTC"
                         });
 
-                        let message = "";
 
                         switch (entry.action) {
                         case "PUSH":
@@ -80,7 +79,7 @@
                             ${details}
                         </div>
                     `;
-                        //div.innerText = message;
+                       
                         container.appendChild(div);
                     });
 
@@ -90,8 +89,8 @@
         }
 
        
-        fetchWebhooks();
-        setInterval(fetchWebhooks, 15000);
+        fetchActions();
+        setInterval(fetchActions, 15000);
     </script>
 </body>
 </html>
